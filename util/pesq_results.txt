@@ -1,0 +1,15 @@
+REFERENCE	 DEGRADED	 PESQMOS	 MOSLQO	 SAMPLE_FREQ	 MODE
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb
+/home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/clean.wav	 /home/diggerdu/manifestdestiny/Cranberry/checkpoints/babble-0db/enhance.wav	 2.300	 1.908	 16000	nb

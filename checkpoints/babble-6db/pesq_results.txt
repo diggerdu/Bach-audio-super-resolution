@@ -1,0 +1,17 @@
+REFERENCE	 DEGRADED	 PESQMOS	 MOSLQO	 SAMPLE_FREQ	 MODE
+clean.wav	 enhance.wav	 2.801	 2.533	 16000	nb
+clean.wav	 mix.wav	 2.007	 1.637	 16000	nb
+clean.wav	 enhance.wav	 2.801	 2.533	 16000	nb
+clean.wav	 mix.wav	 2.007	 1.637	 16000	nb
+clean.wav	 mix.wav	 2.007	 1.637	 16000	nb
+clean.wav	 mix.wav	 2.007	 1.637	 16000	nb
+clean.wav	 mix.wav	 -1.000	 1.166	 16000	wb
+clean.wav	 mix.wav	 2.007	 1.637	 16000	nb
+clean.wav	 clean.wav	 4.500	 4.549	 16000	nb
+clean.wav	 enhance.wav	 2.801	 2.533	 16000	nb
+clean.wav	 enhance.wav	 2.801	 2.533	 16000	nb
+clean.wav	 enhance.wav	 2.801	 2.533	 16000	nb
+clean.wav	 enhance.wav	 2.801	 2.533	 16000	nb
+clean.wav	 enhance.wav	 2.801	 2.533	 16000	nb
+clean.wav	 enhance.wav	 2.801	 2.533	 16000	nb
+clean.wav	 mix.wav	 2.007	 1.637	 16000	nb
