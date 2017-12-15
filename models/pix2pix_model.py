@@ -71,11 +71,14 @@ class Pix2PixModel(BaseModel):
                         filter(lambda P:id(P) not in IgnoredParam, self.netG.parameters()),
                         lr=opt.lr
                         )
-                def closure(self):
+                def closure():
                     self.optimizer_G.zero_grad()
                     self.forward()
                     self.loss_G = self.criterion(self.fakeB, self.realB)
                     self.loss_G.backward()
+
+                    return self.loss_G
+                self.closure = closure
 
 
 
