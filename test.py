@@ -18,6 +18,8 @@ from util import html
 import numpy as np
 import librosa
 import soundfile as sf
+from scipy.signal import decimate
+from models.time_frequence import spline_up
 
 
 def CalSNR(ref, sig):
@@ -41,28 +43,27 @@ def loadAudio(path, SR):
 def eval(model, cleanPath, noisePath, opt):
     leng = opt.nfft + (opt.nFrames - 1) * opt.hop
     clean = loadAudio(cleanPath, opt.SR)
-    noise = loadAudio(noisePath, opt.SR)
     assert clean.shape[0] > leng
 
-    noise = np.tile(noise, clean.shape[0] // noise.shape[0] + 1)[:clean.shape[0]]
-    noiseAmp = np.mean(np.square(clean)) / np.power(10, opt.snr / 10.0)
-    scale = np.sqrt(noiseAmp / np.mean(np.square(noise)))
-    mix = clean + scale * noise
+    clean = clean[:leng]
+    degraded = decimate(clean, 2, zero_phase=0)
+    interpolated = spline_up(degraded, 2)
+    target = clean
+    
     print(opt.nfft, opt.nFrames, opt.hop)
 
-    input_ = {'A' : torch.from_numpy(mix[:leng][np.newaxis, :]).float()}
+    input_ = {'A' : torch.from_numpy(interpolated[None, None, :]).float()}
     model.set_input(input_)
     model.test()
     output = model.get_current_visuals().data.cpu().numpy().flatten()
-    target = clean[:leng]
 
-    output = output[1024:-1024]
-    target = target[1024:-1024]
-    mix = mix[1024:-1024]
+    output = output
+    target = target
     print(CalSNR(target, output), 'dB')
     sf.write('clean.wav', target, opt.SR)
-    sf.write('enhance.wav', output, opt.SR)
-    sf.write('mix.wav', mix, opt.SR)
+    sf.write('enhanced.wav', output, opt.SR)
+    sf.write('degraded.wav', degraded, opt.SR//2)
+    sf.write('interpolated.wav', interpolated, opt.SR)
 
 
 opt = TestOptions().parse()
@@ -76,9 +77,9 @@ model = create_model(opt)
 
 # test
 
-cleanPath = "/home/diggerdu/dataset/Large/clean/p240/p240_013.wav"
+cleanPath = "/home/alan/Large/clean/p225/p225_001.wav"
 # cleanPath = "/home/diggerdu/dataset/VCTK-Corpus/wav48/p315/p315_013.wav"
-noisePath = "/home/diggerdu/dataset/Large/babble/59899-robinhood76-00309crowd2-116.wav"
+noisePath = "/home/alan/Large/babble/59899-robinhood76-00309crowd2-116.wav"
 #noisePath = "/home/diggerdu/dataset/speech/14.wav"
 #cleanPath = "/home/diggerdu/dataset/speech/14.wav"
 
