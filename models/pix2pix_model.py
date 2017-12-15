@@ -45,7 +45,7 @@ class Pix2PixModel(BaseModel):
             self.old_lr = opt.lr
             # define loss functions
             # self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
-            self.criterion = torch.nn.L2Loss()
+            self.criterion = torch.nn.MSELoss()
 
             # initialize optimizers
 
@@ -71,6 +71,11 @@ class Pix2PixModel(BaseModel):
                         filter(lambda P:id(P) not in IgnoredParam, self.netG.parameters()),
                         lr=opt.lr
                         )
+                def closure(self):
+                    self.optimizer_G.zero_grad()
+                    self.forward()
+                    self.loss_G = self.criterion(self.fakeB, self.realB)
+                    self.loss_G.backward()
 
 
 
@@ -154,10 +159,14 @@ class Pix2PixModel(BaseModel):
             self.optimizer_D.zero_grad()
             self.backward_D()
             self.optimizer_D.step()
-
-        self.optimizer_G.zero_grad()
-        self.backward_G()
-        self.optimizer_G.step()
+        
+         
+        if self.opt.optimizer == 'lbfgs':
+            self.optimizer_G.step(self.closure)
+        else:
+            self.optimizer_G.zero_grad()
+            self.backward_G()
+            self.optimizer_G.step()
 
     def get_current_errors(self):
         if self.gan_loss:
