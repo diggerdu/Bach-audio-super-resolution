@@ -65,7 +65,12 @@ class Pix2PixModel(BaseModel):
                     filter(lambda P: id(P) not in IgnoredParam,
                        self.netG.parameters()),
                         lr=opt.lr)
-
+    
+            if self.opt.optimizer == 'lbfgs':
+                self.optimizer_G = torch.optim.LBFGS(
+                        filter(lambda P:id(P) not in IgnoredParam, self.netG.parameters()),
+                        lr=opt.lr
+                        )
 
 
 
