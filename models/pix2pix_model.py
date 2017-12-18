@@ -25,9 +25,10 @@ class Pix2PixModel(BaseModel):
         self.input_B = self.Tensor(opt.batchSize, opt.nfft).cuda(device=self.gpu_ids[0])
         # load/define networks
         self.netG = networks.define_G(opt)
+        self.stft = tf.stft().cuda()
 
         if opt.specLoss:
-            self.specModel = tf.Spectrogram(nfft=opt.nfft, hop_length=opt.hop).cuda()
+            self.specModel = tf.Spectrogram().cuda()
 
         if self.isTrain:
             use_sigmoid = opt.no_lsgan
@@ -45,7 +46,7 @@ class Pix2PixModel(BaseModel):
             self.old_lr = opt.lr
             # define loss functions
             # self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
-            self.criterion = torch.nn.MSELoss()
+            self.criterion = torch.nn.L1Loss()
 
             # initialize optimizers
 
@@ -69,7 +70,8 @@ class Pix2PixModel(BaseModel):
             if self.opt.optimizer == 'lbfgs':
                 self.optimizer_G = torch.optim.LBFGS(
                         filter(lambda P:id(P) not in IgnoredParam, self.netG.parameters()),
-                        lr=opt.lr
+                        lr=opt.lr,
+                        history=50,
                         )
                 def closure():
                     self.optimizer_G.zero_grad()
@@ -96,12 +98,25 @@ class Pix2PixModel(BaseModel):
         self.input_B.resize_(input_B.size()).copy_(input_B)
 
         self.image_paths = 'NOTIMPLEMENT'
+    
+
+    def spec(self, signal):
+        mag, phase, ac = self.stft(signal)    
+        spec = torch.rsqrt((torch.pow(mag * torch.cos(phase), 2) + 
+            torch.pow(mag * torch.sin(phase), 2)))
+
+        return spec
 
     def forward(self):
         self.real_A = Variable(self.input_A)
         output = self.netG.forward(self.real_A)
         self.fakeB = output['time']
         self.realB = Variable(self.input_B)
+
+        self.realB = self.spec(self.realB)
+        self.fakeB = self.spec(self.fakeB)
+        self.realB.detach_()
+
         if self.opt.specLoss:
             self.fakeBSpec = output['spec']
             self.realBSpec = Variable(self.specModel(self.realB).data, requires_grad=False)

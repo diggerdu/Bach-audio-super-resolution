@@ -30,7 +30,7 @@ for epoch in range(1, opt.niter + 1):
         model.optimize_parameters()
         error = model.get_current_errors()['G_LOSS']
         errorEpoch.append(error)
-        print('if ok', error)
+        print('steps {}, error {}'.format(total_steps, error))
     t = time.time() - epoch_start_time
     print('epoch ', epoch, ', current error is ', np.mean(errorEpoch), ' cost time is ', t)
     if time.time() - embark_time > 60 * 6:

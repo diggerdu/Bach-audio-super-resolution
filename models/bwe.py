@@ -81,11 +81,12 @@ class AudioUnet(nn.Module):
         self.lastconv = nn.Sequential(OrderedDict([
             ( 'conv_norm', nn.Conv1d(in_channels=n_filters[-1]+n_filters[0], 
                                 out_channels=2, kernel_size=9, padding=4) ),
-            ( 'subpixel', SubPixel1d(2) )
+            ( 'subpixel', SubPixel1d(2) ),
             ]))
 
     def forward(self, sample):
         #downsampling
+        sample = torch.unsqueeze(sample, 1)
         downsampling_l = []
         for index, model in enumerate(self.downsampling):
             if index == 0:
@@ -105,7 +106,11 @@ class AudioUnet(nn.Module):
         #last convolution
         pred = self.lastconv(pred)
 
-        return pred + sample
+        #fancy interpolation
+        pred = torch.cat((sample.permute(0, 2, 1), pred.permute(0, 2, 1)), 1)
+        pred = pred.contiguous().view(pred.data.shape[0], -1)
+
+        return pred
 
 
 
