@@ -25,7 +25,7 @@ class Pix2PixModel(BaseModel):
         self.input_B = self.Tensor(opt.batchSize, opt.nfft).cuda(device=self.gpu_ids[0])
         # load/define networks
         self.netG = networks.define_G(opt)
-        self.stft = tf.stft().cuda()
+#        self.stft = tf.stft().cuda()
 
         if opt.specLoss:
             self.specModel = tf.Spectrogram().cuda()
@@ -46,7 +46,7 @@ class Pix2PixModel(BaseModel):
             self.old_lr = opt.lr
             # define loss functions
             # self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
-            self.criterion = torch.nn.L1Loss()
+            self.criterion = torch.nn.MSELoss()
 
             # initialize optimizers
 
@@ -100,22 +100,23 @@ class Pix2PixModel(BaseModel):
         self.image_paths = 'NOTIMPLEMENT'
     
 
-    def spec(self, signal):
-        mag, phase, ac = self.stft(signal)    
-        spec = torch.rsqrt((torch.pow(mag * torch.cos(phase), 2) + 
-            torch.pow(mag * torch.sin(phase), 2)))
-
-        return spec
+#    def spec(self, signal):
+#        mag, phase, ac = self.stft(signal)    
+#        spec = torch.rsqrt((torch.pow(mag * torch.cos(phase), 2) + 
+#            torch.pow(mag * torch.sin(phase), 2)))
+#
+#        return spec
 
     def forward(self):
         self.real_A = Variable(self.input_A)
         output = self.netG.forward(self.real_A)
         self.fakeB = output['time']
         self.realB = Variable(self.input_B)
+        __import__('pdb').set_trace()
 
-        self.realB = self.spec(self.realB)
-        self.fakeB = self.spec(self.fakeB)
-        self.realB.detach_()
+ #       self.realB = self.spec(self.realB)
+ #       self.fakeB = self.spec(self.fakeB)
+ #       self.realB.detach_()
 
         if self.opt.specLoss:
             self.fakeBSpec = output['spec']
