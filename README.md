@@ -3,13 +3,16 @@ Bach:The learning based model for audio super resolution
 
 ### Paper List
 #### Dictionary Learning
-[Joint dictionary training for bandwidth extension of speech signals](http://ieeexplore.ieee.org/document/7472814/)
+[Joint dictionary training for bandwidth extension of speech signals](http://ieeexplore.ieee.org/document/7472814/)  
+Audio super-resolution using analysis dictionary learning
 #### Machine Learning
 Blind bandwidth extension using K-means and Support Vector Regression.  
 Statistical Bandwidth Extension for Speech Synthesis Based on Gaussian Mixture Model with Sub-Band Basis Spectrum Model  
 GMM-based bandwidth extension using sub-band basis spectrum model.
 #### NMF
 Non-negative matrix completion for bandwidth extension: A convex optimization approach.
+#### DNN
+[Audio super-resolution using concatenative resynthesis](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=7336890)
 #### RNN
 A Novel Research to Artificial Bandwidth Extension Based on Deep BLSTM Recurrent Neural Networks and Exemplar-Based Sparse Representation.
 #### Envelop Estimation
