@@ -2,16 +2,26 @@
 Bach:The learning based model for audio super resolution
 
 ### Paper List
-Joint dictionary training for bandwidth extension of speech signals
-
-http://ieeexplore.ieee.org/document/7472814/
-
-Blind bandwidth extension using K-means and Support Vector Regression.
-
-Statistical Bandwidth Extension for Speech Synthesis Based on Gaussian Mixture Model with Sub-Band Basis Spectrum Model
-
-Speech Bandwidth Extension Aided by Magnitude Spectrum Data Hiding
-
-Artificial bandwidth extension using the constant Q transform.
-
+#### Dictionary Learning
+[Joint dictionary training for bandwidth extension of speech signals](http://ieeexplore.ieee.org/document/7472814/)
+#### Machine Learning
+Blind bandwidth extension using K-means and Support Vector Regression.  
+Statistical Bandwidth Extension for Speech Synthesis Based on Gaussian Mixture Model with Sub-Band Basis Spectrum Model  
+GMM-based bandwidth extension using sub-band basis spectrum model.
+#### NMF
+Non-negative matrix completion for bandwidth extension: A convex optimization approach.
+#### RNN
 A Novel Research to Artificial Bandwidth Extension Based on Deep BLSTM Recurrent Neural Networks and Exemplar-Based Sparse Representation.
+#### Envelop Estimation
+Speech envelope estimation and voiceless consonant restoration for artificial bandwidth extension of narrow band speech.
+#### Uncatelogued
+Speech Bandwidth Extension Aided by Magnitude Spectrum Data Hiding  
+Artificial bandwidth extension using the constant Q transform.  
+A blind bandwidth extension method for audio signals based on phase space reconstruction  
+Blind bandwidth extension of audio signals based on harmonic mapping in phase space.
+#### Evaluation
+An Objective Evaluation Methodology for Blind Bandwidth Extension  
+Speech quality evaluation of artificial bandwidth extension: comparing subjective judgments and instrumental predictions
+
+#### Book
+[Audio Bandwidth Extension Using Audio Super-Resolution](https://link.springer.com/chapter/10.1007/978-3-319-48896-7_53)
