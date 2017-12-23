@@ -7,6 +7,33 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 import scipy.signal
 import scipy.interpolate as interpolate
+import librosa
+
+
+def logspec(clean, noisy, fs=16000, Range=None):
+    '''
+    clean: clean signals;
+    noisy: noisy signals;
+    fs: sampling frequency;
+    r: the frequency range used in the calculation of LSD
+    '''
+
+    if Range == None:
+        Range = [0, fs/2]
+    assert clean.size == noisy.size
+    length = clean.size
+    clean = clean / np.sqrt(np.square(clean).sum())
+    clean = clean.flatten()
+    noisy = noisy / np.sqrt(np.square(noisy).sum())
+    noisy = noisy.flatten()
+
+    CL = np.abs(librosa.core.stft(clean, 1024, 512, center=False))
+    NO = np.abs(librosa.core.stft(noisy, 1024, 512, center=False))
+
+    logs = np.log(np.clip(CL, 1e-7, None)) - np.log(np.clip(NO, 1e-7, None))
+    LSD = np.sqrt(np.mean(logs)).mean() 
+
+    return LSD
 
 
 def butter_bandpass(lowcut, highcut, fs, order=5):

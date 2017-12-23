@@ -45,25 +45,37 @@ def eval(model, cleanPath, noisePath, opt):
     clean = loadAudio(cleanPath, opt.SR)
     assert clean.shape[0] > leng
 
-    clean = clean[:leng]
-    degraded = decimate(clean, 2, zero_phase=0)
-    interpolated = spline_up(degraded, 2)
+#    clean = clean[:leng]
+    clean = [x for x in range(leng)]
     target = clean
-    
+#    degraded = decimate(clean, 2, zero_phase=0)
+#    interpolated = spline_up(degraded, 2)
+    degraded = []
+    for index, point in enumerate(clean):
+        if index % 2 == 0:
+            degraded.append(point)
+
     print(opt.nfft, opt.nFrames, opt.hop)
 
-    input_ = {'A' : torch.from_numpy(interpolated[None, None, :]).float()}
+#    input_ = {'A' : torch.from_numpy(interpolated[None, None, :]).float()}
+    input_ = {'A': torch.from_numpy(degraded[None, :]).float()}
     model.set_input(input_)
     model.test()
-    output = model.get_current_visuals().data.cpu().numpy().flatten()
-
-    output = output
-    target = target
+    res = model.get_current_visuals().data.cpu().numpy().flatten()
+    
+    output = []
+    for index, point1, point2 in zip(input_, res):
+        __import__('pdb').set_trace()
+        output.append(point1)
+        output.append(point2)
+    output = np.array(output)
+    __import__('pdb').set_trace()
     print(CalSNR(target, output), 'dB')
+
     sf.write('clean.wav', target, opt.SR)
     sf.write('enhanced.wav', output, opt.SR)
     sf.write('degraded.wav', degraded, opt.SR//2)
-    sf.write('interpolated.wav', interpolated, opt.SR)
+#    sf.write('interpolated.wav', interpolated, opt.SR)
 
 
 opt = TestOptions().parse()

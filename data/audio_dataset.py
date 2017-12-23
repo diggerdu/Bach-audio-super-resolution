@@ -28,16 +28,13 @@ class AudioDataset(BaseDataset):
         CleanAudio = self.load_audio(CleanData)
 #        A = decimate(CleanAudio, self.scale).astype(np.float32)
 #        A = tf.spline_up(A, self.scale).astype(np.float32)
-        A = []
-        res = []
-        for index, point in enumerate(CleanAudio):
-            if index % 2 == 0:
-                res.append(point)
-            else:
-                A.append(point)
+        audio_len = CleanAudio.size
+        A_index = np.array([1, 0])
+        A_mask = np.tile(A, [audio_len//2])
+        res_mask = 1 - A_mask
+        A = CleanAudio[A_mask>0].astype(np.float32)
+        res = CleanAudio[res_mask>0].astype(np.float32)
 
-        A = np.array(A).astype(np.float32)
-        res = np.array(res).astype(np.float32)
 
         assert A.dtype==np.float32 and CleanAudio.dtype==np.float32
 
