@@ -30,7 +30,7 @@ class AudioDataset(BaseDataset):
 #        A = tf.spline_up(A, self.scale).astype(np.float32)
         audio_len = CleanAudio.size
         A_index = np.array([1, 0])
-        A_mask = np.tile(A, [audio_len//2])
+        A_mask = np.tile(A_index, [audio_len//2])
         res_mask = 1 - A_mask
         A = CleanAudio[A_mask>0].astype(np.float32)
         res = CleanAudio[res_mask>0].astype(np.float32)

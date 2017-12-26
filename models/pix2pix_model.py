@@ -112,7 +112,6 @@ class Pix2PixModel(BaseModel):
         output = self.netG.forward(self.real_A)
         self.fakeB = output['time']
         self.realB = Variable(self.input_B)
-        __import__('pdb').set_trace()
 
  #       self.realB = self.spec(self.realB)
  #       self.fakeB = self.spec(self.fakeB)

@@ -87,7 +87,6 @@ class AudioUnet(nn.Module):
     def forward(self, sample):
         #downsampling
         sample = torch.unsqueeze(sample, 1)
-        __import__('pdb').set_trace()
         downsampling_l = []
         for index, model in enumerate(self.downsampling):
             if index == 0:
@@ -107,7 +106,6 @@ class AudioUnet(nn.Module):
         #last convolution
         pred = self.lastconv(pred)
         pred = torch.squeeze(pred, 1)
-        __import__('pdb').set_trace()
         #fancy interpolation
 #        pred = torch.cat((sample.permute(0, 2, 1), pred.permute(0, 2, 1)), 1)
 #        pred = pred.contiguous().view(pred.data.shape[0], -1)
