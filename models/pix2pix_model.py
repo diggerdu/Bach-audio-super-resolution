@@ -109,9 +109,9 @@ class Pix2PixModel(BaseModel):
 
     def forward(self):
         self.real_A = Variable(self.input_A)
-        output = self.netG.forward(self.real_A)
-        self.fakeB = output['time']
         self.realB = Variable(self.input_B)
+        self.netG.forward((self.real_A, self.real_B))
+#        self.fakeB = output['time']
 
  #       self.realB = self.spec(self.realB)
  #       self.fakeB = self.spec(self.fakeB)
@@ -179,12 +179,12 @@ class Pix2PixModel(BaseModel):
             self.optimizer_D.step()
         
          
-        if self.opt.optimizer == 'lbfgs':
-            self.optimizer_G.step(self.closure)
-        else:
-            self.optimizer_G.zero_grad()
-            self.backward_G()
-            self.optimizer_G.step()
+#        if self.opt.optimizer == 'lbfgs':
+#            self.optimizer_G.step(self.closure)
+#        else:
+#            self.optimizer_G.zero_grad()
+#            self.backward_G()
+#            self.optimizer_G.step()
 
     def get_current_errors(self):
         if self.gan_loss:

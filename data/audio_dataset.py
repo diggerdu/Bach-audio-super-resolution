@@ -22,25 +22,31 @@ class AudioDataset(BaseDataset):
         self.nfft = opt.nfft
         self.scale = opt.scale
 
+    def cal_mfcc(self, signal):
+        mfcc = librosa.feature.mfcc(
+                signal, self.SR, n_mfcc=self.mfcc, n_fft=self.nfft, hop_length=self.hop)
+        mfcc_delta = librosa.feature.delta(mfcc)
+        mfcc_delta2 = librosa.feature.delta(mfcc_delta)
+        feature = np.concatenate((mfcc, mfcc_delta, mfcc_delta2), 0)
+
+        return np.transpose(feature, (0, 2, 1))
+
     def __getitem__(self, index):
         CleanData = self.Clean[index % len(self.Clean)]
-
         CleanAudio = self.load_audio(CleanData)
-#        A = decimate(CleanAudio, self.scale).astype(np.float32)
-#        A = tf.spline_up(A, self.scale).astype(np.float32)
-        audio_len = CleanAudio.size
-        A_index = np.array([1, 0])
-        A_mask = np.tile(A_index, [audio_len//2])
-        res_mask = 1 - A_mask
-        A = CleanAudio[A_mask>0].astype(np.float32)
-        res = CleanAudio[res_mask>0].astype(np.float32)
+        Clean_feature = np.abs(librosa.core.stft(
+            y=CleanAudio, n_fft=self.nfft, hop_length=self.hop, center=False)).astype(np.float32)
+        Clean_feature = np.transpose(Clean_feature, (0, 2, 1))
+        A = decimate(CleanAudio, self.scale).astype(np.float32)
+        A = tf.spline_up(A, self.scale).astype(np.float32)
+        A_feature = self.cal_mfcc(A)
 
 
         assert A.dtype==np.float32 and CleanAudio.dtype==np.float32
 
         return {
-                'A': A,
-                'B': res,
+                'A': A_feature,
+                'B': Clean_feature,
         }
 
     def __len__(self):

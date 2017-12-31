@@ -14,8 +14,8 @@ class BaseOptions():
         self.parser.add_argument('--snr', type=int, default=10, help='SNR')
         self.parser.add_argument('--batchSize', type=int, default=64, help='input batch size')
         self.parser.add_argument('--SR', type=int, default=16000, help='the samplerate of input audio')
-        self.parser.add_argument('--nfft', type=int, default=256, help='the number of frequency bin')
-        self.parser.add_argument('--hop', type=int, default=256, help='the hop length of STFT')
+        self.parser.add_argument('--nfft', type=int, default=1024, help='the number of frequency bin')
+        self.parser.add_argument('--hop', type=int, default=512, help='the hop length of STFT')
         self.parser.add_argument('--nFrames', type=int, default='8', help='the number of frames')
         self.parser.add_argument('--split_hop', type=int, default=0, help='hop length when split spectrogram')
         self.parser.add_argument('--ngf', type=int, default=64, help='# of gen filters in first conv layer')
@@ -41,6 +41,8 @@ class BaseOptions():
         self.parser.add_argument('--max_dataset_size', type=int, default=float("inf"), help='Maximum number of samples allowed per dataset. If the dataset directory contains more than max_dataset_size, only a subset is loaded.')
         self.parser.add_argument('--resize_or_crop', type=str, default='resize_and_crop', help='scaling and cropping of images at load time [resize_and_crop|crop|scale_width]')
         self.parser.add_argument('--gan_loss', action='store_true', help='use gan loss')
+        self.parser.add_argument('--dictSize', type=int, default=300, help='the size of high quality dict = nFrames * DatasetSize')
+        self.parser.add_argument('--nmfcc', type=int, default=13, help='number of mfcc coefficients')
 
         self.initialized = True
 
@@ -50,6 +52,7 @@ class BaseOptions():
         self.opt = self.parser.parse_args()
         self.opt.isTrain = self.isTrain   # train or test
         self.opt.len = self.opt.nfft + (self.opt.nFrames - 1) * self.opt.hop
+
         str_ids = self.opt.gpu_ids.split(',')
         self.opt.gpu_ids = []
         if self.opt.isTrain:

@@ -39,7 +39,7 @@ class TestModel(BaseModel):
 
     def test(self):
         self.real_A = Variable(self.input_A)
-        fake_B = self.netG.forward(self.real_A)['time']
+        fake_B = self.netG.test(self.real_A)
         self.fake_B = fake_B.sign() * torch.clamp(torch.abs(fake_B), min=0., max=1.)
         print('----------------SIZE CHECK-------------------')
         print('INPUT:', self.real_A.size())

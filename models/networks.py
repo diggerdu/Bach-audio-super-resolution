@@ -50,7 +50,7 @@ def define_G(opt):
 
     if len(opt.gpu_ids) > 0:
         netG.cuda(device_id=opt.gpu_ids[0])
-    netG.weight_init()
+#    netG.weight_init()
     return netG
 
 
@@ -170,6 +170,9 @@ class AuFCNWrapper(nn.Module):
         else :
             return self.model(input)
 
+    def test(self, sample):
+        return self.model.test(sample)
+
     def weight_init(self):
         for name, para in self.named_parameters():
             if 'weight' in name:
@@ -189,13 +192,27 @@ class AuFCNWrapper(nn.Module):
 class AuFCN(nn.Module):
     def __init__(self, opt):
         super(AuFCN, self).__init__()
-        self.stft_model = tf.stft(opt.nfft, opt.hop)
-        self.istft_model = tf.istft(opt.nfft, opt.hop)
-        self.AudioUnet = bwe.AudioUnet(opt)
+        self.hDict = torch.Tensor(opt.maxhSize, opt.nmfcc * 3)
+        self.hdictIndex = 0
+        self.lDict = torch.Tensor(opt.maxlSize, opt.nmfcc * 3)
+        self.lDictIndex = 0
+
+    def update(self, my_dict, sample, dict_index):
+        new = permuted.view(-1, sample.shape[2])
+        my_dict[dict_index:dict_index+new.shape[0], :] = new
+        return dict_index + new.shape[0]
 
     def forward(self, sample):
-        pred = self.AudioUnet(sample)
-        return {'time':pred}
+        degraded = sample[0]
+        clean = sample[1]
+        self.hDict_index = self.update_h(self.hDict, clean, self.hDict_index)
+        self.lDict_index = self.update_l(self.lDict, degraded, self.lDict_index)
+    
+    def test(self, sample):
+        temp = torch.matmul(self.lDict, sample)
+        maxindex = torch.argmax(temp, 0)
+        return self.hDict[*maxindex]
+
 
 class Tanh_rescale(Module):
     def forward(self, input):
