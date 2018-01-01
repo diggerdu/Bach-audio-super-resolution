@@ -214,12 +214,14 @@ class AuFCN(nn.Module):
     
     def test(self, sample):
         # (nelement, 3 * nmfcc) * (3 * nmfcc, nFrames)
-        temp = torch.mm(self.lDict, sample) 
-        __import__('pdb').set_trace()
-        temp /= torch.pow(torch.sum(sample * sample, 0, keepdim=True), 0.5)
-        print(temp)
-        _, maxindex = torch.max(temp, 0)
-        selected = torch.index_select(self.hDict, 0, maxindex)
+#        temp = torch.mm(self.lDict, sample) 
+#        temp /= torch.pow(torch.sum(sample * sample, 0, keepdim=True), 0.5)
+#        _, maxindex = torch.max(temp, 0)
+#        selected = torch.index_select(self.hDict, 0, maxindex)
+        temp = [(self.lDict - sample[:, x]) for x in range(sample.shape[1])]
+        temp = [x * x for x in temp]
+        temp = [torch.max(-torch.sum(x, 1, keepdim=True), dim=0)[1] for x in temp]
+        selected = torch.index_select(self.hDict, 0, torch.cat(temp, 0))
         return selected.permute(1, 0)
 
 class Tanh_rescale(Module):
