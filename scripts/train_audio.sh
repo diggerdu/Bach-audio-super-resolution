@@ -20,5 +20,6 @@ python train.py \
  --layers 4 \
  --gpu_ids 0 \
  --serial_batches \
+ --dictSize 140 \
  --nmfcc 13
 # --input_nc 1 --output_nc 1 \

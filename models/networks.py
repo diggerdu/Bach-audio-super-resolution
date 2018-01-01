@@ -208,14 +208,16 @@ class AuFCN(nn.Module):
     def forward(self, sample):
         degraded = sample[0]
         clean = sample[1]
-        print('current index ', self.hDictIndex)
         self.hDictIndex = self.update(self.hDict, clean, self.hDictIndex)
         self.lDictIndex = self.update(self.lDict, degraded, self.lDictIndex)
+        print('current index ', self.hDictIndex)
     
     def test(self, sample):
         # (nelement, 3 * nmfcc) * (3 * nmfcc, nFrames)
         temp = torch.mm(self.lDict, sample) 
+        __import__('pdb').set_trace()
         temp /= torch.pow(torch.sum(sample * sample, 0, keepdim=True), 0.5)
+        print(temp)
         _, maxindex = torch.max(temp, 0)
         selected = torch.index_select(self.hDict, 0, maxindex)
         return selected.permute(1, 0)

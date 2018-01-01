@@ -70,7 +70,7 @@ def eval(model, opt):
     amp = model.get_current_visuals().data.cpu().numpy()
     spec = amp * np.cos(phase) + amp * np.sin(phase) * 1j
     output = librosa.core.istft(spec, hop_length=opt.nfft//2)
-    
+
     print(CalSNR(clean, output), 'dB')
 
     sf.write('clean.wav', clean, opt.SR)

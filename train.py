@@ -16,7 +16,7 @@ dataset_size = len(data_loader)
 print('#training images = %d' % dataset_size)
 
 model = create_model(opt)
-opt.dictSize = opt.nFrames * dataset_size 
+assert opt.dictSize == (opt.nFrames + 2) * dataset_size 
 # visualizer = Visualizer(opt)
 
 total_steps = 0
