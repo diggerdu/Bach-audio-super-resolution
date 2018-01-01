@@ -199,17 +199,20 @@ class AuFCN(nn.Module):
                                                requires_grad=False)
         self.lDictIndex = 0
 
-    def update(self, my_dict, sample, dict_index):
+    def update(self, my_dict, sample, dict_index, low):
         new = sample.view(-1, sample.shape[2])
-        normalized = new / torch.pow(torch.sum(new * new, 1, keepdim=True), 0.5)
+        if low:
+            normalized = new / torch.pow(torch.sum(new * new, 1, keepdim=True), 0.5)
+        else:
+            normalized = new
         my_dict[dict_index:dict_index+normalized.shape[0], :] = normalized
         return dict_index + normalized.shape[0]
 
     def forward(self, sample):
         degraded = sample[0]
         clean = sample[1]
-        self.hDictIndex = self.update(self.hDict, clean, self.hDictIndex)
-        self.lDictIndex = self.update(self.lDict, degraded, self.lDictIndex)
+        self.lDictIndex = self.update(self.lDict, degraded, self.lDictIndex, 1)
+        self.hDictIndex = self.update(self.hDict, clean, self.hDictIndex, 0)
         print('current index ', self.hDictIndex)
     
     def test(self, sample):
