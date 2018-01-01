@@ -54,33 +54,33 @@ class Pix2PixModel(BaseModel):
             param = self.netG.named_parameters()
             IgnoredParam = [id(P) for name, P in param if 'stft' in name]
 
-            if self.opt.optimizer == 'Adam':
-                self.optimizer_G = torch.optim.Adam(
-                    filter(lambda P: id(P) not in IgnoredParam,
-                       self.netG.parameters()),
-                        lr=opt.lr,
-                        betas=(opt.beta1, 0.999))
+    #        if self.opt.optimizer == 'Adam':
+    #            self.optimizer_G = torch.optim.Adam(
+    #                filter(lambda P: id(P) not in IgnoredParam,
+    #                   self.netG.parameters()),
+    #                    lr=opt.lr,
+    #                    betas=(opt.beta1, 0.999))
 
-            if self.opt.optimizer == 'sgd':
-                self.optimizer_G = torch.optim.SGD(
-                    filter(lambda P: id(P) not in IgnoredParam,
-                       self.netG.parameters()),
-                        lr=opt.lr)
-    
-            if self.opt.optimizer == 'lbfgs':
-                self.optimizer_G = torch.optim.LBFGS(
-                        filter(lambda P:id(P) not in IgnoredParam, self.netG.parameters()),
-                        lr=opt.lr,
-                        history=50,
-                        )
-                def closure():
-                    self.optimizer_G.zero_grad()
-                    self.forward()
-                    self.loss_G = self.criterion(self.fakeB, self.realB)
-                    self.loss_G.backward()
+    #        if self.opt.optimizer == 'sgd':
+    #            self.optimizer_G = torch.optim.SGD(
+    #                filter(lambda P: id(P) not in IgnoredParam,
+    #                   self.netG.parameters()),
+    #                    lr=opt.lr)
+    #
+    #        if self.opt.optimizer == 'lbfgs':
+    #            self.optimizer_G = torch.optim.LBFGS(
+    #                    filter(lambda P:id(P) not in IgnoredParam, self.netG.parameters()),
+    #                    lr=opt.lr,
+    #                    history=50,
+    #                    )
+    #            def closure():
+    #                self.optimizer_G.zero_grad()
+    #                self.forward()
+    #                self.loss_G = self.criterion(self.fakeB, self.realB)
+    #                self.loss_G.backward()
 
-                    return self.loss_G
-                self.closure = closure
+    #                return self.loss_G
+    #            self.closure = closure
 
 
 
@@ -108,9 +108,9 @@ class Pix2PixModel(BaseModel):
 #        return spec
 
     def forward(self):
-        self.real_A = Variable(self.input_A)
-        self.realB = Variable(self.input_B)
-        self.netG.forward((self.real_A, self.real_B))
+        self.realA = Variable(self.input_A, volatile=True)
+        self.realB = Variable(self.input_B, volatile=True)
+        self.netG.forward((self.realA, self.realB))
 #        self.fakeB = output['time']
 
  #       self.realB = self.spec(self.realB)
@@ -123,10 +123,10 @@ class Pix2PixModel(BaseModel):
 
 
     # no backprop gradients
-    def test(self):
-        self.real_A = Variable(self.input_A, volatile=True)
-        self.fakeB = self.netG.forward(self.real_A)
-        self.realB = Variable(self.input_B, volatile=True)
+#    def test(self):
+#        self.realA = Variable(self.input_A, volatile=True)
+#        self.fakeB = self.netG.forward(self.realA)
+#        self.realB = Variable(self.input_B, volatile=True)
 
     # get image paths
     def get_image_paths(self):

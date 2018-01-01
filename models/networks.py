@@ -49,7 +49,7 @@ def define_G(opt):
     netG = AuFCNWrapper(opt)
 
     if len(opt.gpu_ids) > 0:
-        netG.cuda(device_id=opt.gpu_ids[0])
+        netG.cuda(device=opt.gpu_ids[0])
 #    netG.weight_init()
     return netG
 
@@ -161,14 +161,14 @@ class AuFCNWrapper(nn.Module):
         except Exception:
             print('scale!=2 not supported')
 
-    def forward(self, input):
-        if self.gpu_ids and isinstance(input.data,
+    def forward(self, input_):
+        if self.gpu_ids and isinstance(input_[0].data,
                                        torch.cuda.FloatTensor) and False:
-            output = nn.parallel.data_parallel(self.model, input, self.gpu_ids)
+            output = nn.parallel.data_parallel(self.model, input_, self.gpu_ids)
             print("network G output", output.size())
             return output
         else :
-            return self.model(input)
+            return self.model(input_)
 
     def test(self, sample):
         return self.model.test(sample)
@@ -192,27 +192,33 @@ class AuFCNWrapper(nn.Module):
 class AuFCN(nn.Module):
     def __init__(self, opt):
         super(AuFCN, self).__init__()
-        self.hDict = torch.Tensor(opt.maxhSize, opt.nmfcc * 3)
-        self.hdictIndex = 0
-        self.lDict = torch.Tensor(opt.maxlSize, opt.nmfcc * 3)
+        self.hDict = nn.Parameter(torch.Tensor(opt.dictSize, opt.nfft // 2 + 1), 
+                                               requires_grad=False)
+        self.hDictIndex = 0
+        self.lDict = nn.Parameter(torch.Tensor(opt.dictSize, opt.nmfcc * 3), 
+                                               requires_grad=False)
         self.lDictIndex = 0
 
     def update(self, my_dict, sample, dict_index):
-        new = permuted.view(-1, sample.shape[2])
-        my_dict[dict_index:dict_index+new.shape[0], :] = new
-        return dict_index + new.shape[0]
+        new = sample.view(-1, sample.shape[2])
+        normalized = new / torch.pow(torch.sum(new * new, 1, keepdim=True), 0.5)
+        my_dict[dict_index:dict_index+normalized.shape[0], :] = normalized
+        return dict_index + normalized.shape[0]
 
     def forward(self, sample):
         degraded = sample[0]
         clean = sample[1]
-        self.hDict_index = self.update_h(self.hDict, clean, self.hDict_index)
-        self.lDict_index = self.update_l(self.lDict, degraded, self.lDict_index)
+        print('current index ', self.hDictIndex)
+        self.hDictIndex = self.update(self.hDict, clean, self.hDictIndex)
+        self.lDictIndex = self.update(self.lDict, degraded, self.lDictIndex)
     
     def test(self, sample):
-        temp = torch.matmul(self.lDict, sample)
-        maxindex = torch.argmax(temp, 0)
-        return self.hDict[*maxindex]
-
+        # (nelement, 3 * nmfcc) * (3 * nmfcc, nFrames)
+        temp = torch.mm(self.lDict, sample) 
+        temp /= torch.pow(torch.sum(sample * sample, 0, keepdim=True), 0.5)
+        _, maxindex = torch.max(temp, 0)
+        selected = torch.index_select(self.hDict, 0, maxindex)
+        return selected.permute(1, 0)
 
 class Tanh_rescale(Module):
     def forward(self, input):

@@ -21,22 +21,23 @@ class AudioDataset(BaseDataset):
         self.hop = opt.hop
         self.nfft = opt.nfft
         self.scale = opt.scale
+        self.nmfcc = opt.nmfcc
 
     def cal_mfcc(self, signal):
         mfcc = librosa.feature.mfcc(
-                signal, self.SR, n_mfcc=self.mfcc, n_fft=self.nfft, hop_length=self.hop)
+                signal, self.SR, n_mfcc=self.nmfcc, n_fft=self.nfft, hop_length=self.hop)
         mfcc_delta = librosa.feature.delta(mfcc)
         mfcc_delta2 = librosa.feature.delta(mfcc_delta)
         feature = np.concatenate((mfcc, mfcc_delta, mfcc_delta2), 0)
 
-        return np.transpose(feature, (0, 2, 1))
+        return np.transpose(feature, (1, 0))
 
     def __getitem__(self, index):
         CleanData = self.Clean[index % len(self.Clean)]
         CleanAudio = self.load_audio(CleanData)
         Clean_feature = np.abs(librosa.core.stft(
-            y=CleanAudio, n_fft=self.nfft, hop_length=self.hop, center=False)).astype(np.float32)
-        Clean_feature = np.transpose(Clean_feature, (0, 2, 1))
+            y=CleanAudio, n_fft=self.nfft, hop_length=self.hop, center=True)).astype(np.float32)
+        Clean_feature = np.transpose(Clean_feature, (1, 0))
         A = decimate(CleanAudio, self.scale).astype(np.float32)
         A = tf.spline_up(A, self.scale).astype(np.float32)
         A_feature = self.cal_mfcc(A)

@@ -40,42 +40,43 @@ def loadAudio(path, SR):
     data = data / np.max(np.abs(data))
     return data - np.mean(data)
 
-def eval(model, cleanPath, noisePath, opt):
+def eval(model, opt):
+    cleanPath = opt.PathClean
+    assert os.path.isfile(cleanPath)
     leng = opt.nfft + (opt.nFrames - 1) * opt.hop
     clean = loadAudio(cleanPath, opt.SR)
     assert clean.shape[0] > leng
 
-#    clean = clean[:leng]
-    clean = [x for x in range(leng)]
-    target = clean
-#    degraded = decimate(clean, 2, zero_phase=0)
-#    interpolated = spline_up(degraded, 2)
-    degraded = []
-    for index, point in enumerate(clean):
-        if index % 2 == 0:
-            degraded.append(point)
+    clean = clean[:leng]
+    degraded = decimate(clean, 2, zero_phase=0)
+    interpolated = spline_up(degraded, 2)
 
     print(opt.nfft, opt.nFrames, opt.hop)
 
+    # cal spectrogram and mfcc
+    mfcc = librosa.feature.mfcc(
+            interpolated, opt.SR, n_mfcc=opt.nmfcc, n_fft=opt.nfft, hop_length=opt.hop)
+    mfcc_delta = librosa.feature.delta(mfcc)
+    mfcc_delta2 = librosa.feature.delta(mfcc_delta)
+    feature = np.concatenate((mfcc, mfcc_delta, mfcc_delta2), 0)
+    
+    phase = np.angle(librosa.core.stft(interpolated, opt.nfft, opt.hop))
+
 #    input_ = {'A' : torch.from_numpy(interpolated[None, None, :]).float()}
-    input_ = {'A': torch.from_numpy(degraded[None, :]).float()}
+    input_ = {'A': torch.from_numpy(feature).float()}
     model.set_input(input_)
     model.test()
-    res = model.get_current_visuals().data.cpu().numpy().flatten()
     
-    output = []
-    for index, point1, point2 in zip(input_, res):
-        __import__('pdb').set_trace()
-        output.append(point1)
-        output.append(point2)
-    output = np.array(output)
-    __import__('pdb').set_trace()
-    print(CalSNR(target, output), 'dB')
+    amp = model.get_current_visuals().data.cpu().numpy()
+    spec = amp * np.cos(phase) + amp * np.sin(phase) * 1j
+    output = librosa.core.istft(spec, hop_length=opt.nfft//2)
+    
+    print(CalSNR(clean, output), 'dB')
 
-    sf.write('clean.wav', target, opt.SR)
+    sf.write('clean.wav', clean, opt.SR)
     sf.write('enhanced.wav', output, opt.SR)
     sf.write('degraded.wav', degraded, opt.SR//2)
-#    sf.write('interpolated.wav', interpolated, opt.SR)
+    sf.write('interpolated.wav', interpolated, opt.SR)
 
 
 opt = TestOptions().parse()
@@ -89,11 +90,11 @@ model = create_model(opt)
 
 # test
 
-cleanPath = "/home/alan/Large/clean/p225/p225_001.wav"
+#cleanPath = "/home/alan/Large/clean/p225/p225_001.wav"
 # cleanPath = "/home/diggerdu/dataset/VCTK-Corpus/wav48/p315/p315_013.wav"
-noisePath = "/home/alan/Large/babble/59899-robinhood76-00309crowd2-116.wav"
+#noisePath = "/home/alan/Large/babble/59899-robinhood76-00309crowd2-116.wav"
 #noisePath = "/home/diggerdu/dataset/speech/14.wav"
 #cleanPath = "/home/diggerdu/dataset/speech/14.wav"
 
-eval(model, cleanPath, noisePath, opt)
+eval(model, opt)
 
