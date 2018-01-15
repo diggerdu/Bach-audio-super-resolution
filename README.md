@@ -9,6 +9,7 @@ Audio super-resolution using analysis dictionary learning
 Blind bandwidth extension using K-means and Support Vector Regression.  
 Statistical Bandwidth Extension for Speech Synthesis Based on Gaussian Mixture Model with Sub-Band Basis Spectrum Model  
 GMM-based bandwidth extension using sub-band basis spectrum model.
+WAVENET BASED LOW RATE SPEECH CODING(https://arxiv.org/pdf/1712.01120.pdf)
 #### NMF
 Non-negative matrix completion for bandwidth extension: A convex optimization approach.
 #### DNN
