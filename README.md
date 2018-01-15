@@ -9,13 +9,14 @@ Audio super-resolution using analysis dictionary learning
 Blind bandwidth extension using K-means and Support Vector Regression.  
 Statistical Bandwidth Extension for Speech Synthesis Based on Gaussian Mixture Model with Sub-Band Basis Spectrum Model  
 GMM-based bandwidth extension using sub-band basis spectrum model.  
-[WAVENET BASED LOW RATE SPEECH CODING](https://arxiv.org/pdf/1712.01120.pdf)
 #### NMF
 Non-negative matrix completion for bandwidth extension: A convex optimization approach.
 #### DNN
-[Audio super-resolution using concatenative resynthesis](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=7336890)
+[Audio super-resolution using concatenative resynthesis](http://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=7336890)  
+[WAVENET BASED LOW RATE SPEECH CODING](https://arxiv.org/pdf/1712.01120.pdf)
 #### RNN
-A Novel Research to Artificial Bandwidth Extension Based on Deep BLSTM Recurrent Neural Networks and Exemplar-Based Sparse Representation.
+A Novel Research to Artificial Bandwidth Extension Based on Deep BLSTM Recurrent Neural Networks and Exemplar-Based Sparse Representation.  
+[Audio bandwidth extension using ensemble of recurrent neural networks](https://link.springer.com/article/10.1186/s13636-016-0090-0)
 #### Envelop Estimation
 Speech envelope estimation and voiceless consonant restoration for artificial bandwidth extension of narrow band speech.
 #### Uncatelogued
