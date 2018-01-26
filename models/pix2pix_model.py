@@ -31,21 +31,23 @@ class Pix2PixModel(BaseModel):
 
         if self.isTrain:
             use_sigmoid = opt.no_lsgan
+            self.netD = networks.define_D(opt)
             # self.netD = networks.define_D(opt.input_nc + opt.output_nc, opt.ndf,
             #                              opt.which_model_netD,
             #                              opt.n_layers_D, opt.norm, use_sigmoid, self.gpu_ids)
 
         if not self.isTrain or opt.continue_train:
             self.load_network(self.netG, 'G', opt.which_epoch)
-            # if self.isTrain:
-            #    self.load_network(self.netD, 'D', opt.which_epoch)
+            if self.isTrain:
+                self.load_network(self.netD, 'D', opt.which_epoch)
 
         if self.isTrain:
             # self.fake_AB_pool = ImagePool(opt.pool_size)
             self.old_lr = opt.lr
             # define loss functions
-            # self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
+            self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
             self.criterion = torch.nn.MSELoss()
+            self.criterionL1 = torch.nn.L1Loss()
 
             # initialize optimizers
 
@@ -59,6 +61,21 @@ class Pix2PixModel(BaseModel):
                        self.netG.parameters()),
                         lr=opt.lr,
                         betas=(opt.beta1, 0.999))
+                self.optimizer_D = torch.optim.Adam(
+                    filter(lambda P: id(P) not in IgnoredParam,
+                       self.netD.parameters()),
+                        lr=opt.lr,
+                        betas=(opt.beta1, 0.999))
+
+            if self.opt.optimizer == 'rmsprop':
+                self.optimizer_G = torch.optim.RMSprop(
+                    filter(lambda P: id(P) not in IgnoredParam,
+                       self.netG.parameters()),
+                        lr=opt.lr,)
+                self.optimizer_D = torch.optim.RMSprop(
+                    filter(lambda P: id(P) not in IgnoredParam,
+                       self.netD.parameters()),
+                        lr=opt.lr,)
 
             if self.opt.optimizer == 'sgd':
                 self.optimizer_G = torch.optim.SGD(
@@ -71,7 +88,7 @@ class Pix2PixModel(BaseModel):
 
             print('---------- Networks initialized ---------------')
             networks.print_network(self.netG)
-            # networks.print_network(self.netD)
+            networks.print_network(self.netD)
             print('-----------------------------------------------')
 
     def set_input(self, input):
@@ -85,8 +102,8 @@ class Pix2PixModel(BaseModel):
         self.image_paths = 'NOTIMPLEMENT'
 
     def forward(self):
-        self.real_A = Variable(self.input_A)
-        output = self.netG.forward(self.real_A)
+        self.realA = Variable(self.input_A)
+        output = self.netG.forward(self.realA)
         self.fakeB = output['time']
         self.realB = Variable(self.input_B)
         if self.opt.specLoss:
@@ -96,8 +113,8 @@ class Pix2PixModel(BaseModel):
 
     # no backprop gradients
     def test(self):
-        self.real_A = Variable(self.input_A, volatile=True)
-        self.fakeB = self.netG.forward(self.real_A)
+        self.realA = Variable(self.input_A, volatile=True)
+        self.fakeB = self.netG.forward(self.realA)
         self.realB = Variable(self.input_B, volatile=True)
 
     # get image paths
@@ -107,14 +124,13 @@ class Pix2PixModel(BaseModel):
     def backward_D(self):
         # Fake
         # stop backprop to the generator by detaching fakeB
-        fake_AB = self.fake_AB_pool.query(
-            torch.cat((self.real_A, self.fakeB), 1))
-        self.pred_fake = self.netD.forward(fake_AB.detach())
+        self.fake_AB = torch.cat((self.realA, self.fakeB), 1)
+        self.pred_fake = self.netD.forward(self.fake_AB.detach())
         self.loss_D_fake = self.criterionGAN(self.pred_fake, False)
 
         # Real
-        real_AB = torch.cat((self.real_A, self.realB), 1)
-        self.pred_real = self.netD.forward(real_AB)
+        realAB = torch.cat((self.realA, self.realB), 1)
+        self.pred_real = self.netD.forward(realAB)
         self.loss_D_real = self.criterionGAN(self.pred_real, True)
 
         # Combined loss
@@ -123,23 +139,11 @@ class Pix2PixModel(BaseModel):
         self.loss_D.backward()
 
     def backward_G(self):
-        # self.loss_G = self.criterionL1(self.fakeB, Variable(torch.cuda.FloatTensor(self.fakeB.size()).zero_()))
-        nfft = self.opt.nfft
-        if self.opt.wav_db:
-            self.fakeB = tf.amp2db(self.fakeB)
-            self.realB = tf.amp2db(self.realB)
-        
-        self.loss_G = self.criterion(self.fakeB, self.realB)
-        if self.scale is 0:
-            self.loss_G = self.criterion(self.fakeB[:, nfft:-nfft], self.realB[:, nfft:-nfft])
-        
+        self.pred_fake = self.netD.forward(self.fake_AB)
+        self.loss_G_GAN = self.criterionGAN(self.pred_fake, True)
+        self.loss_G_L1 = self.opt.lambda_A * self.criterionL1(self.fakeB, self.realA)
+        self.loss_G = self.loss_G_GAN + self.loss_G_L1
 
-        if self.opt.specLoss:
-            start = self.opt.specLossStart
-            self.loss_GSpec = self.criterion(self.fakeBSpec[:,:,start:,:], self.realBSpec[:,:,start:,:])
-
-            self.loss_G = self.loss_G + self.opt.specLossRatio * self.loss_GSpec
-        
         self.loss_G.backward()
 
     def optimize_parameters(self):
@@ -170,7 +174,7 @@ class Pix2PixModel(BaseModel):
             # return self.loss_G.data[0]
 
     def get_current_visuals(self):
-        real_A = self.real_A.data.cpu().numpy()
+        realA = self.realA.data.cpu().numpy()
         fakeB = self.fakeB.data.cpu().numpy()
         realB = self.realB.data.cpu().numpy()
         clean = self.clean.cpu().numpy()

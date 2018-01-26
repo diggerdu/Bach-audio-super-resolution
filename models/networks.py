@@ -5,9 +5,10 @@ from torch.autograd import Variable
 from torch.nn.modules import Module
 import numpy as np
 from collections import OrderedDict
-from . import densenet_efficient as dens
+#from . import densenet_efficient as dens
 from . import time_frequence as tf
 from . import bwe 
+from . import segan
 import torch.nn.init as init
 ###############################################################################
 # Functions
@@ -50,45 +51,25 @@ def define_G(opt):
 
     if len(opt.gpu_ids) > 0:
         netG.cuda(device=opt.gpu_ids[0])
-    netG.weight_init()
+    netG.weights_init()
     return netG
 
 
-def define_D(input_nc,
-             ndf,
-             which_model_netD,
-             n_layers_D=3,
-             norm='batch',
-             use_sigmoid=False,
-             gpu_ids=[]):
+def define_D(opt):
     netD = None
-    use_gpu = len(gpu_ids) > 0
-    norm_layer = get_norm_layer(norm_type=norm)
-
+    use_gpu = len(opt.gpu_ids) > 0
+#    norm_layer = get_norm_layer(norm_type=norm)
+    which_model_netD = opt.which_model_netD
     if use_gpu:
         assert (torch.cuda.is_available())
-    if which_model_netD == 'basic':
-        netD = NLayerDiscriminator(
-            input_nc,
-            ndf,
-            n_layers=3,
-            norm_layer=norm_layer,
-            use_sigmoid=use_sigmoid,
-            gpu_ids=gpu_ids)
-    elif which_model_netD == 'n_layers':
-        netD = NLayerDiscriminator(
-            input_nc,
-            ndf,
-            n_layers_D,
-            norm_layer=norm_layer,
-            use_sigmoid=use_sigmoid,
-            gpu_ids=gpu_ids)
+    if which_model_netD == 'seganDiscriminator':
+        netD = segan.SeganDiscriminator(opt)
     else:
         print('Discriminator model name [%s] is not recognized' %
               which_model_netD)
     if use_gpu:
-        netD.cuda(device=gpu_ids[0])
-    netD.apply(weights_init)
+        netD.cuda(device=opt.gpu_ids[0])
+    netD.weights_init()
     return netD
 
 
@@ -126,29 +107,29 @@ class GANLoss(nn.Module):
         else:
             self.loss = nn.BCELoss()
 
-    def get_target_tensor(self, input, target_is_real):
+    def get_target_tensor(self, input_, target_is_real):
         target_tensor = None
         if target_is_real:
             create_label = ((self.real_label_var is None)
-                            or (self.real_label_var.numel() != input.numel()))
+                            or (self.real_label_var.numel() != input_.numel()))
             if create_label:
-                real_tensor = self.Tensor(input.size()).fill_(self.real_label)
+                real_tensor = self.Tensor(input_.size()).fill_(self.real_label)
                 self.real_label_var = Variable(
                     real_tensor, requires_grad=False)
             target_tensor = self.real_label_var
         else:
             create_label = ((self.fake_label_var is None)
-                            or (self.fake_label_var.numel() != input.numel()))
+                            or (self.fake_label_var.numel() != input_.numel()))
             if create_label:
-                fake_tensor = self.Tensor(input.size()).fill_(self.fake_label)
+                fake_tensor = self.Tensor(input_.size()).fill_(self.fake_label)
                 self.fake_label_var = Variable(
                     fake_tensor, requires_grad=False)
             target_tensor = self.fake_label_var
         return target_tensor
 
-    def __call__(self, input, target_is_real):
-        target_tensor = self.get_target_tensor(input, target_is_real)
-        return self.loss(input, target_tensor)
+    def __call__(self, input_, target_is_real):
+        target_tensor = self.get_target_tensor(input_, target_is_real)
+        return self.loss(input_, target_tensor)
 
 
 class AuFCNWrapper(nn.Module):
@@ -161,27 +142,26 @@ class AuFCNWrapper(nn.Module):
         except Exception:
             print('scale!=2 not supported')
 
-    def forward(self, input):
-        if self.gpu_ids and isinstance(input.data,
+    def forward(self, input_):
+        if self.gpu_ids and isinstance(input_.data,
                                        torch.cuda.FloatTensor) and False:
-            output = nn.parallel.data_parallel(self.model, input, self.gpu_ids)
+            output = nn.parallel.data_parallel(self.model, input_, self.gpu_ids)
             print("network G output", output.size())
             return output
         else :
-            return self.model(input)
+            return self.model(input_)
 
-    def weight_init(self):
+    def weights_init(self):
         for name, para in self.named_parameters():
+            assert 'weight' in name or 'bias' in name
             if 'weight' in name:
                 if 'orth' in name:
                     init.orthogonal(para.data)
                 else:
                     init.normal(para.data, mean=0, std=1e-3)
-            else:
+            elif 'bias' in name:
                 init.constant(para, 0)
     
-
-
 
 # TODO robust
 # TODO requires gradient
@@ -189,18 +169,19 @@ class AuFCNWrapper(nn.Module):
 class AuFCN(nn.Module):
     def __init__(self, opt):
         super(AuFCN, self).__init__()
-        self.stft_model = tf.stft(opt.nfft, opt.hop)
-        self.istft_model = tf.istft(opt.nfft, opt.hop)
+#        self.stft_model = tf.stft(opt.nfft, opt.hop)
+#        self.istft_model = tf.istft(opt.nfft, opt.hop)
         self.AudioUnet = bwe.AudioUnet(opt)
 
     def forward(self, sample):
         pred = self.AudioUnet(sample)
         return {'time':pred}
 
+
 class Tanh_rescale(Module):
-    def forward(self, input):
+    def forward(self, input_):
         return torch.div(
-            torch.add(torch.tanh(torch.mul(input, 2.0)), 1.0), 2.0)
+            torch.add(torch.tanh(torch.mul(input_, 2.0)), 1.0), 2.0)
 
     def __repr__(self):
         return self.__class__.__name__ + ' ()'

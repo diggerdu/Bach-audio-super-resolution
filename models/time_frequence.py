@@ -134,10 +134,10 @@ class istft(nn.Module):
         self.real_kernels, self.imag_kernels, self.ac_cof = _get_istft_kernels(nfft)
         trans_kernels = np.zeros((nfft, nfft), np.float64)
         np.fill_diagonal(trans_kernels, np.ones((nfft, ), dtype=np.float64))
-        self.win_cof = 1 / scipy.signal.get_window("hanning", nfft)
-        self.win_cof[0] = 0
-        self.win_cof = torch.from_numpy(self.win_cof).float()
-        self.win_cof = nn.Parameter(self.win_cof, requires_grad=False)
+#        self.win_cof = 1 / scipy.signal.get_window("hanning", nfft)
+#        self.win_cof[0] = 0
+#        self.win_cof = torch.from_numpy(self.win_cof).float()
+#        self.win_cof = nn.Parameter(self.win_cof, requires_grad=False)
         self.trans_kernels = nn.Parameter(torch.from_numpy(trans_kernels[:, np.newaxis, np.newaxis, :]).float())
 
     def forward(self, magn, phase, ac):
